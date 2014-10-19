@@ -3,6 +3,7 @@
 #include "lexer.h"
 #include "tokens.h"
 #include "parser.h"
+#include "runtime.h"
 
 SOURCE_INFO src;
 
@@ -89,11 +90,12 @@ void pares_stmt(enum TOKEN_TYPE production[]) {
 }
 
 ExprNode * stmt_for() {
-    ExprNode * for_stmt;
-    ExprNode * start,  * end, * step;
+    ExprNode * var, * start,  * end, * step;
     ExprNode * x_expr, * y_expr;
+    var = new_node();
+    var->type = VAR;
     match(VAR);
-    v = src.current;
+    var->arg1 = (ExprNode *) src.current;
     match(FROM);
     start    = stmt_expr();
     match(TO);
@@ -105,22 +107,26 @@ ExprNode * stmt_for() {
     match(COMMA);
     y_expr   = stmt_expr();
     match(RP);   match(SEMICOLON);
-    return for_stmt;
+    eval_for(var, start, end, step, x_expr, y_expr);
+    return NULL;
 }
 
 ExprNode * stmt_is() {
-    TOKEN *desc, *value;
+    ExprNode * desc  = new_node();
+    ExprNode * value = new_node();
     match(VAR);
-    desc = src.current;
+    desc->arg1 = (ExprNode *)src.current;
     match(IS);
     // 试探以避免回溯
     if (test(LP)) {
         // 赋值为PONIT
     } else {
         match(NUMBER);
-        value = src.current;
+        value->value = src.current->info.value;
     }
     match(SEMICOLON);
+    eval_is(desc, value);
+    return NULL;
 }
 
 ExprNode * stmt_atom() {
@@ -140,6 +146,7 @@ ExprNode * stmt_atom() {
         en = (ExprNode *) malloc(sizeof(ExprNode));
         en = (ExprNode *) calloc(1, sizeof(ExprNode));
         en->type = VAR;
+        en->arg1 = (ExprNode *)src.current;
     } else if (test_current(NUMBER)){
         en = new_node();
         en->type = NUMBER;
@@ -157,7 +164,8 @@ ExprNode * stmt_component() {
     if (test(POWER)) {
         comp = stmt_component();
           en = new_node();
-          en->type = POWER;
+          en->type = FUNC;
+          en->op = find_func("**");
           en->arg1 = atom;
           en->arg2 = comp;
     } else {

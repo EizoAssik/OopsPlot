@@ -4,8 +4,6 @@
 #include <stdio.h>
 #include "tokens.h"
 
-extern TOKEN ** PRODUCTIOINS[];
-
 typedef struct {
     char   * buffer;
     FILE   * file;

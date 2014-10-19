@@ -101,8 +101,7 @@ TOKEN * solve_token(char * literal) {
 }
 
 TOKEN * make_number (char * literal) {
-    // TODO 写一个健壮的实w现
-    char ** endptr;
+    // TODO 写一个健壮的实现
     double val = strtod(literal, NULL);
     TOKEN * tk = (TOKEN *) malloc(sizeof(TOKEN));
     tk->type = NUMBER;
