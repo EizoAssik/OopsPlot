@@ -8,24 +8,18 @@
 
 char *REVERSED_LITERAL[] = {
     "VOID",
+    // 保留字
+    "IS", "FOR", "FROM", "TO", "STEP", "DRAW",
+#ifdef __USE_RAW__
+    // 保留以兼容旧语法
+    "T", "SCALE", "ROT", "ORIGIN"
+#endif
     // 终结符号
-    "SPACE",
     "PLUS", "MINUS", "MUL", "DIV", "POWER",
     "LP", "RP", "COMMA", "SEMICOLON",
-    // 字面值
-    "LITERAL",
-    "NUMBER", "VAR", "FUNC", "POINT",
-    // 保留字
-    "SYMBOL",
-    "IS",
-    "FOR",
-    "FROM",
-    "TO",
-    "STEP",
-    "DRAW",
-    "SCALE",
-    "ROT",
-    "ORIGIN"
+    "NUMBER", "VAR", "FUNC",
+    // 非终结符号
+    "NONTER", "POINT", "EXPR",
 };
 
 TOKEN RESERVED_CONSTANT[] = {
@@ -34,13 +28,15 @@ TOKEN RESERVED_CONSTANT[] = {
     { .type = VOID },
 };
 
+#ifdef __USE_RAW__
 TOKEN RESERVED_VARIABLE[] = {
-    { .type = VAR,   .literal = "T"      },
-    { .type = VAR,   .literal = "ROT"    },
-    { .type = POINT, .literal = "SCALE"  },
-    { .type = POINT, .literal = "ORIGIN" },
+    { .type = T,      .literal = "T"      },
+    { .type = ROT,    .literal = "ROT"    },
+    { .type = SCALE,  .literal = "SCALE"  },
+    { .type = ORIGIN, .literal = "ORIGIN" },
     { .type = VOID },
 };
+#endif
 
 TOKEN RESERVED_KEYWORDS[] = {
     { .type = IS,   .literal = "IS"   },
@@ -65,7 +61,7 @@ TOKEN TK_COMMA     = { .type = COMMA,     .literal = ","  };
 static inline FUNC_INFO * search_func(FUNC_INFO funcs[], char* literal) {
     for (int i = 0 ; funcs[i].name != NULL ; i++)
         if (strcmp(literal, funcs[i].name) == 0)
-            return funcs;
+            return &funcs[i];
     return NULL;
 }
 
@@ -92,20 +88,22 @@ TOKEN * solve_token(char * literal) {
     // 如果名字是一个关键字
     tk = search_token(RESERVED_KEYWORDS, literal);
     if (tk) return tk;
-    // 如果名字在变量空间
+#ifdef __USE_RAW__
+    // 如果名字在原始语法的保留变量空间
     tk = search_token(RESERVED_VARIABLE, literal);
     if (tk) return tk;
+#endif
     // 如果名字能够被解析成函数
     tk = find_func(literal);
     if (tk) return tk;
-    // 否则构造一个SYMBOL
-    return make_symbol(strdup(literal), SYMBOL);
+    // 否则构造为一个变量名
+    return make_symbol(strdup(literal), VAR);
 }
 
 TOKEN * make_number (char * literal) {
     // TODO 写一个健壮的实w现
     char ** endptr;
-    double val = strtod(literal, endptr);
+    double val = strtod(literal, NULL);
     TOKEN * tk = (TOKEN *) malloc(sizeof(TOKEN));
     tk->type = NUMBER;
     tk->literal = strdup(literal);
@@ -130,7 +128,6 @@ TOKEN * find_func (char * name) {
 }
 
 void * make_token_info (enum TOKEN_TYPE type, char * literal, ...) {
-    va_list argv;
     switch (type) {
         case FUNC:
             break;
@@ -144,6 +141,10 @@ void * make_token_info (enum TOKEN_TYPE type, char * literal, ...) {
             break;
     }
     return NULL;
+}
+
+inline _Bool is_terminal(enum TOKEN_TYPE tk_t) {
+    return tk_t > NONTER;
 }
 
 char * dump_token_to_str(TOKEN * tk) {

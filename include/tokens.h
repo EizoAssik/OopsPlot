@@ -11,24 +11,20 @@
 //
 enum TOKEN_TYPE {
     VOID = 0,
+    // 保留字
+    IS, FOR, FROM, TO, STEP, DRAW,
+#ifdef __USE_RAW__
+    // 保留以兼容旧语法
+    T, SCALE, ROT, ORIGIN,
+#endif
     // 终结符号
-    SPACE,
     PLUS, MINUS, MUL, DIV, POWER,
     LP, RP, COMMA, SEMICOLON,
-    // 字面值
-    LITERAL,
-    NUMBER, VAR, FUNC, POINT,
-    // 保留字
-    SYMBOL,
-    IS,
-    FOR,
-    FROM,
-    TO,
-    STEP,
-    DRAW,
-    SCALE,
-    ROT,
-    ORIGIN
+    NUMBER, VAR, FUNC,
+    // 非终结符号
+    NONTER, POINT, EXPR,
+    // 长度标记位
+    TOKEN_TYPE_SIZE
 };
 
 // 词法符号
@@ -78,6 +74,9 @@ TOKEN * solve_token(char * literal);
 TOKEN * make_symbol(char * literal, enum TOKEN_TYPE type);
 TOKEN * make_number(char * literal);
 TOKEN * find_func(char * name);
+
+// 用于鉴别TOKENs的函数
+_Bool is_terminal(enum TOKEN_TYPE tk_t);
 
 // 用于调试的函数
 
