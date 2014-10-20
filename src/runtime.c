@@ -43,18 +43,19 @@ double set_symbol(const char * literal, double value) {
 }
 
 static inline const char * get_var_name(ExprNode * expr) {
-    return ((TOKEN *)(expr->arg1))->literal;
+    return expr->arg1.tk->literal;
 }
 
 double eval(ExprNode * expr) {
-    FUNC_INFO * op;
     switch (expr->type) {
         case FUNC:
-            op = expr->op->info.ptr;
-            if (op->argc == 1) {
-                return ((sfunc)(op->func))(eval(expr->arg1));
+            if (expr->op->argc == 1) {
+                double arg = eval(expr->arg1.node);
+                return ((sfunc)(expr->op->func))(arg);
             } else {
-                return ((dfunc)(op->func))(eval(expr->arg1), eval(expr->arg2));
+                double arg1 = eval(expr->arg1.node);
+                double arg2 = eval(expr->arg2.node);
+                return ((dfunc)(expr->op->func))(arg1, arg2);
             }
             break;
         case VAR:
@@ -75,7 +76,7 @@ void eval_for(ExprNode * var,
               ExprNode * step,
               ExprNode * x_expr,
               ExprNode * y_expr) {
-    double sym, start, end, delta;
+    double sym, start, end, delta, x, y;
     start = eval(from);
       end = eval(to);
     delta = eval(step);
@@ -83,7 +84,9 @@ void eval_for(ExprNode * var,
     set_symbol(var_name, start);
     sym = start;
     while (sym < end) {
-        printf("(%lf, %lf)\n", eval(x_expr), eval(y_expr));
+        x = eval(x_expr);
+        y = eval(y_expr);
+        printf("(%lf, %lf)\n", x, y);
         sym += delta;
         set_symbol(var_name, sym);
     }

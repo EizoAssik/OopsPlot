@@ -4,6 +4,7 @@
 #include "tokens.h"
 #include "parser.h"
 #include "runtime.h"
+#include "function.h"
 
 SOURCE_INFO src;
 
@@ -34,14 +35,16 @@ static inline size_t has_lookback(SOURCE_INFO *si) {
 }
 
 TOKEN * lookforward(SOURCE_INFO * src) {
-    if (!has_lookback(src)) {
+    if (has_lookback(src)) {
+        clear_lookback(src);
+    } else {
         src->current = next_token(src->buffer, &(src->cur));
-    } 
+    }
     return src->current;
 }
 
 void error(TOKEN * tk) {
-    printf("ERROR & %s\n", dump_token_to_str(tk));
+    printf("ERROR @ %s\n", dump_token_to_str(tk));
     exit(1);
 }
 
@@ -61,7 +64,6 @@ static inline _Bool test(enum TOKEN_TYPE t) {
 void match_current(enum TOKEN_TYPE t) {
     if (src.current->type != t)
         error(src.current);
-    printf("√");
 }
 
 void match(enum TOKEN_TYPE t) {
@@ -72,7 +74,6 @@ void match(enum TOKEN_TYPE t) {
     TOKEN * tk = lookforward(&src);
     if (tk->type != t)
         error(tk);
-    printf("√");
 }
 
 void pares_stmt(enum TOKEN_TYPE production[]) {
@@ -95,7 +96,7 @@ ExprNode * stmt_for() {
     var = new_node();
     var->type = VAR;
     match(VAR);
-    var->arg1 = (ExprNode *) src.current;
+    var->arg1.tk = src.current;
     match(FROM);
     start    = stmt_expr();
     match(TO);
@@ -115,7 +116,7 @@ ExprNode * stmt_is() {
     ExprNode * desc  = new_node();
     ExprNode * value = new_node();
     match(VAR);
-    desc->arg1 = (ExprNode *)src.current;
+    desc->arg1.tk = src.current;
     match(IS);
     // 试探以避免回溯
     if (test(LP)) {
@@ -134,19 +135,17 @@ ExprNode * stmt_atom() {
     if (test(LP)) { // (expr)
         en = stmt_expr(); 
         match(RP);
-        en->type = EXPR;
     } else if (test_current(FUNC)) { // FUNCALL
-        en = (ExprNode *) malloc(sizeof(ExprNode));
-        en->op   = src.current;
+        en     = new_node(); 
+        en->op = find_func(src.current->literal);
         match(LP); 
-        en->arg1 = stmt_expr();
+        en->arg1.node = stmt_expr();
         match(RP); 
         en->type = FUNC;
     } else if (test_current(VAR)) { // VAR
-        en = (ExprNode *) malloc(sizeof(ExprNode));
         en = (ExprNode *) calloc(1, sizeof(ExprNode));
         en->type = VAR;
-        en->arg1 = (ExprNode *)src.current;
+        en->arg1.tk = src.current;
     } else if (test_current(NUMBER)){
         en = new_node();
         en->type = NUMBER;
@@ -162,12 +161,12 @@ ExprNode * stmt_component() {
     ExprNode * comp;
     ExprNode * en;
     if (test(POWER)) {
-        comp = stmt_component();
           en = new_node();
           en->type = FUNC;
-          en->op = find_func("**");
-          en->arg1 = atom;
-          en->arg2 = comp;
+          en->op   = find_func(src.current->literal);
+          comp = stmt_component();
+          en->arg1.node = atom;
+          en->arg2.node = comp;
     } else {
         set_lookback(&src);
         en = atom;
@@ -180,9 +179,10 @@ ExprNode * stmt_factor() {
     ExprNode * en;
     switch (src.current->type) {
         case PLUS: case MINUS:
-            en = new_node();
-            en->type = src.current->type;
-            en->arg1 = stmt_factor();
+            en       = new_node();
+            en->type = FUNC;
+            en->op   = find_func(src.current->type == PLUS ? "(+)" : "(-)");
+            en->arg1.node = stmt_factor();
             break;
         default:
             set_lookback(&src);
@@ -197,32 +197,36 @@ ExprNode * stmt_term() {
     ExprNode * first = stmt_factor();
     lookforward(&src);
     while ( test_current(MUL) || test_current(DIV) ) {
-        term->type = src.current->type;
+        term->type = FUNC;
+        term->op   = find_func(src.current->literal);
         ExprNode * second = stmt_factor();
-        term->arg1 = first;
-        term->arg2 = second;
+        term->arg1.node = first;
+        term->arg2.node = second;
         first = term;
-        term = new_node();
+        term  = new_node();
         lookforward(&src);
     }
     set_lookback(&src);
+    free(term);
     return first;
 }
 
 ExprNode * stmt_expr() {
-    ExprNode * term = new_node();
-    ExprNode * first = stmt_factor();
+    ExprNode * expr  = new_node();
+    ExprNode * first = stmt_term();
     lookforward(&src);
     while ( test_current(PLUS) || test_current(MINUS) ) {
-        term->type = src.current->type;
-        ExprNode * second = stmt_factor();
-        term->arg1 = first;
-        term->arg2 = second;
-        first = term;
-        term = new_node();
+        expr->type = FUNC;
+        expr->op   = find_func(src.current->literal);
+        ExprNode * second = stmt_term();
+        expr->arg1.node = first;
+        expr->arg2.node = second;
+        first = expr;
+        expr  = new_node();
         lookforward(&src);
     }
     set_lookback(&src);
+    free(expr);
     return first;
 }
 

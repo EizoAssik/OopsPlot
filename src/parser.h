@@ -20,9 +20,15 @@ TOKEN * lookforward(SOURCE_INFO * src);
 typedef struct _ExprNode ExprNode;
 struct _ExprNode {
     enum TOKEN_TYPE   type;
-    TOKEN           * op;
-    ExprNode        * arg1;
-    ExprNode        * arg2;
+    FUNC_INFO       * op;
+    union {
+        ExprNode    * node;
+        TOKEN       * tk;
+    }                 arg1;
+    union {
+        ExprNode    * node;
+        TOKEN       * tk;
+    }                 arg2;
     double            value;
 };
 

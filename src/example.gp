@@ -1,0 +1,1 @@
+FOR T FROM 0 TO 10 STEP 1 DRAW (T*2, T**2/2);

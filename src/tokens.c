@@ -58,29 +58,34 @@ TOKEN TK_POWER     = { .type = POWER,     .literal = "**" };
 TOKEN TK_SEMICOLON = { .type = SEMICOLON, .literal = ";"  };
 TOKEN TK_COMMA     = { .type = COMMA,     .literal = ","  };
 
-static inline FUNC_INFO * search_func(FUNC_INFO funcs[], char* literal) {
+static inline TOKEN * new_token() {
+    return (TOKEN *) calloc(1, sizeof(TOKEN));
+}
+
+static inline FUNC_INFO * search_func(FUNC_INFO funcs[],
+                                      const char* literal) {
     for (int i = 0 ; funcs[i].name != NULL ; i++)
         if (strcmp(literal, funcs[i].name) == 0)
             return &funcs[i];
     return NULL;
 }
 
-static inline TOKEN * search_token(TOKEN tks[], char* literal) {
+static inline TOKEN * search_token(TOKEN tks[], const char* literal) {
     for (int i = 0 ; tks[i].literal != NULL ; i++)
         if (strcmp(literal, tks[i].literal) == 0)
             return &tks[i];
     return NULL;
 }
 
-TOKEN * make_symbol(char * literal, enum TOKEN_TYPE type) {
-    TOKEN * symbol = (TOKEN *) malloc(sizeof(TOKEN));
+TOKEN * make_symbol(const char * literal, enum TOKEN_TYPE type) {
+    TOKEN * symbol = new_token();
     symbol->type = type;
     symbol->literal = literal;
     return symbol;
 }
 
 // 搜索内建或创建一个SYMBOL
-TOKEN * solve_token(char * literal) {
+TOKEN * solve_token(const char * literal) {
     TOKEN * tk = NULL;
     // 如果名字是一个常量
     tk = search_token(RESERVED_CONSTANT, literal);
@@ -94,52 +99,35 @@ TOKEN * solve_token(char * literal) {
     if (tk) return tk;
 #endif
     // 如果名字能够被解析成函数
-    tk = find_func(literal);
-    if (tk) return tk;
+    FUNC_INFO * fi = find_func(literal);
+    if (fi) {
+        tk = new_token();
+        tk->type = FUNC;
+        tk->info.ptr = fi;
+        tk->literal = strdup(literal);
+        if (tk) return tk;
+    }
     // 否则构造为一个变量名
     return make_symbol(strdup(literal), VAR);
 }
 
-TOKEN * make_number (char * literal) {
+TOKEN * make_number (const char * literal) {
     // TODO 写一个健壮的实现
     double val = strtod(literal, NULL);
-    TOKEN * tk = (TOKEN *) malloc(sizeof(TOKEN));
+    TOKEN * tk = new_token();
     tk->type = NUMBER;
     tk->literal = strdup(literal);
     tk->info.value = val;
     return tk;
 }
 
-TOKEN * find_func (char * name) {
-    TOKEN * tk = NULL;
+FUNC_INFO * find_func (const char * name) {
     FUNC_INFO * fi = NULL;
     // 如果名字是一个用户自定义函数
     fi = search_func(USER_FUNC, name);
     if (!fi) // 如果名字是一个内建函数
         fi = search_func(BUILTIN_FUNC, name);
-    if (!fi) // 如果搜索失败
-        return NULL;
-    tk = (TOKEN *) calloc(1, sizeof(TOKEN));
-    tk->type = FUNC;
-    tk->info.ptr = fi;
-    tk->literal = fi->name;
-    return tk;
-}
-
-void * make_token_info (enum TOKEN_TYPE type, char * literal, ...) {
-    switch (type) {
-        case FUNC:
-            break;
-        
-        case NUMBER:
-            break;
-            
-        case POINT:
-            break;
-        default:
-            break;
-    }
-    return NULL;
+    return fi;
 }
 
 inline _Bool is_terminal(enum TOKEN_TYPE tk_t) {

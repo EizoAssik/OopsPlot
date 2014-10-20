@@ -25,8 +25,8 @@ double minus(double x) {
 }
 
 FUNC_INFO BUILTIN_FUNC[] = {
-    {.name = "+",   .argc = 1, .func = plus},
-    {.name = "-",   .argc = 1, .func = minus},
+    {.name = "(+)",   .argc = 1, .func = plus},
+    {.name = "(-)",   .argc = 1, .func = minus},
     {.name = "SIN", .argc = 1, .func = sin},
     {.name = "COS", .argc = 1, .func = cos},
     {.name = "TAN", .argc = 1, .func = tan},

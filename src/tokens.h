@@ -49,10 +49,7 @@ typedef struct {
     double x, y;
 } POINT_INFO;
 
-void * make_token_info (enum TOKEN_TYPE type, char * literal, ...);
 extern char *REVERSED_LITERAL[];
-
-TOKEN * make_symbol(char * literal, enum TOKEN_TYPE type);
 
 extern TOKEN RESERVED_CONSTANT[];
 extern TOKEN RESERVED_VARIABLE[];
@@ -70,10 +67,10 @@ extern TOKEN TK_COMMA;
 
 // 用于查找/处理TOKENs的函数
 
-TOKEN * solve_token(char * literal);
-TOKEN * make_symbol(char * literal, enum TOKEN_TYPE type);
-TOKEN * make_number(char * literal);
-TOKEN * find_func(char * name);
+TOKEN     * solve_token(const char * literal);
+TOKEN     * make_symbol(const char * literal, enum TOKEN_TYPE type);
+TOKEN     * make_number(const char * literal);
+FUNC_INFO *   find_func(const char * name);
 
 // 用于鉴别TOKENs的函数
 _Bool is_terminal(enum TOKEN_TYPE tk_t);
