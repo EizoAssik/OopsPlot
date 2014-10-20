@@ -9,10 +9,13 @@ void rte(const char * why);
 typedef struct {
     const char * literal;
     double       value;
+    double       optional; 
+    int          point;
 } Symbol;
 
 double get_symbol(const char * literal);
-double set_symbol(const char * literal, double value);
+void   set_symbol(const char * literal, double value);
+void   set_symbol_point(const char * literal, ExprNode * value);
 
 double eval(ExprNode * expr);
 

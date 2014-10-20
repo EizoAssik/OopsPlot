@@ -1,5 +1,5 @@
-#ifndef __OopsPlot__grammer__
-#define __OopsPlot__grammer__
+#ifndef __OopsPlot__parser__
+#define __OopsPlot__parser__
 
 #include <stdio.h>
 #include "tokens.h"
@@ -24,6 +24,7 @@ struct _ExprNode {
     union {
         ExprNode    * node;
         TOKEN       * tk;
+        const char  * literal;
     }                 arg1;
     union {
         ExprNode    * node;
@@ -40,4 +41,5 @@ ExprNode * stmt_factor();
 ExprNode * stmt_term();
 ExprNode * stmt_expr();
 
+void parse(const char * filename);
 #endif

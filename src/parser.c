@@ -5,6 +5,7 @@
 #include "parser.h"
 #include "runtime.h"
 #include "function.h"
+#include "error.h"
 
 SOURCE_INFO src;
 
@@ -43,9 +44,8 @@ TOKEN * lookforward(SOURCE_INFO * src) {
     return src->current;
 }
 
-void error(TOKEN * tk) {
-    printf("ERROR @ %s\n", dump_token_to_str(tk));
-    exit(1);
+static void lexer_error(TOKEN * tk) {
+    error(format("ERROR @ %s\n", dump_token_to_str(tk)));
 }
 
 static inline _Bool test_current(enum TOKEN_TYPE t) {
@@ -63,7 +63,7 @@ static inline _Bool test(enum TOKEN_TYPE t) {
 
 void match_current(enum TOKEN_TYPE t) {
     if (src.current->type != t)
-        error(src.current);
+        lexer_error(src.current);
 }
 
 void match(enum TOKEN_TYPE t) {
@@ -73,21 +73,7 @@ void match(enum TOKEN_TYPE t) {
     }
     TOKEN * tk = lookforward(&src);
     if (tk->type != t)
-        error(tk);
-}
-
-void pares_stmt(enum TOKEN_TYPE production[]) {
-    for (int p_pos = 1; production[p_pos]!=SEMICOLON; ++p_pos) {
-        if (is_terminal(production[p_pos])) {
-            // TODO 继续处理非终结符号
-        } else {
-            // TODO 检查终结符号
-            match(production[p_pos]);
-        }
-    }
-    TOKEN * tk = lookforward(&src);
-    if (tk->type != SEMICOLON)
-        error(tk);
+        lexer_error(tk);
 }
 
 ExprNode * stmt_for() {
@@ -115,15 +101,29 @@ ExprNode * stmt_for() {
 ExprNode * stmt_is() {
     ExprNode * desc  = new_node();
     ExprNode * value = new_node();
-    match(VAR);
     desc->arg1.tk = src.current;
+    desc->type = VAR;
     match(IS);
     // 试探以避免回溯
     if (test(LP)) {
-        // 赋值为PONIT
+        ExprNode * x, * y;
+        x = new_node();
+        y = new_node();
+        x->type = y->type = NUMBER;
+        match(NUMBER);
+        x->value = src.current->info.value;
+        match(COMMA);
+        match(NUMBER);
+        y->value = src.current->info.value;
+        match(RP);
+        value->type = POINT;
+        value->arg1.node = x;
+        value->arg2.node = y;
     } else {
+        set_lookback(&src);
         match(NUMBER);
         value->value = src.current->info.value;
+        value->type = NUMBER;
     }
     match(SEMICOLON);
     eval_is(desc, value);
@@ -143,15 +143,15 @@ ExprNode * stmt_atom() {
         match(RP); 
         en->type = FUNC;
     } else if (test_current(VAR)) { // VAR
-        en = (ExprNode *) calloc(1, sizeof(ExprNode));
+        en = new_node();
         en->type = VAR;
-        en->arg1.tk = src.current;
+        en->arg1.literal = src.current->literal;
     } else if (test_current(NUMBER)){
         en = new_node();
         en->type = NUMBER;
         en->value = src.current->info.value;
     } else {
-        error(src.current);
+        lexer_error(src.current);
     }
     return en;
 }
@@ -230,9 +230,8 @@ ExprNode * stmt_expr() {
     return first;
 }
 
-int main(int argc, char * argv[]) {
-    init_source_info("example.gp", &src);
-    printf("FILE CONTAINS: \n %s \n", src.buffer);
+void parse(const char * filename) {
+    init_source_info(filename, &src);
     TOKEN * tk;
     while (1) {
         tk = lookforward(&src);
@@ -245,9 +244,8 @@ int main(int argc, char * argv[]) {
                 stmt_is();
                 break;
             default:
-                error(tk);
+                lexer_error(tk);
                 break;
         }
     }
-    return 0;
 }
