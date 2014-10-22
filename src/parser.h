@@ -29,6 +29,7 @@ struct _ExprNode {
     union {
         ExprNode    * node;
         TOKEN       * tk;
+        size_t        index;
     }                 arg2;
     double            value;
 };

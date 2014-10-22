@@ -7,6 +7,7 @@
 #include "runtime.h"
 #include "error.h"
 #include "memory.h"
+#include "optimize.h"
 
 typedef double (*sfunc)(double);
 typedef double (*dfunc)(double, double);
@@ -28,7 +29,10 @@ double eval(ExprNode * expr) {
             }
             break;
         case VAR:
-            return get_symbol(get_var_name(expr));
+            return get_symbol(expr->arg1.literal);
+            break;
+        case DMA:
+            return memaccess(expr->arg2.index);
             break;
         case NUMBER:
             return expr->value;
@@ -49,22 +53,25 @@ void eval_for(ExprNode * var,
     start = eval(from);
       end = eval(to);
     delta = eval(step);
-    const char * var_name = get_var_name(var);
-    set_symbol(var_name, start);
+    var = optimize(var);
+    size_t var_pos = var->arg2.index;
+    setvar(var_pos, start);
     sym = start;
+    x_expr = optimize(x_expr);
+    y_expr = optimize(y_expr);
     while (sym < end) {
         x = eval(x_expr);
         y = eval(y_expr);
-        //printf("(%lf, %lf)\n", x, y);
+        printf("(%lf, %lf)\n", x, y);
         sym += delta;
-        set_symbol(var_name, sym);
+        setvar(var_pos, sym);
     }
 }
 
 void eval_is(ExprNode * var, ExprNode * val) {
     // 改写var类型
     const char * var_name = var->arg1.tk->literal;
-    if (has_symbol(var_name)){
+    if (has_symbol(var_name)) {
         if(is_point(var_name)) {
             var->type = POINT;
         } else {
@@ -80,10 +87,10 @@ void eval_is(ExprNode * var, ExprNode * val) {
                      REVERSED_LITERAL[val->type]));
     switch (var->type) {
         case NUMBER:
-            set_symbol(get_var_name(var), eval(val));
+            set_symbol(var_name, eval(val));
             break;
         case POINT:
-            set_symbol_point(get_var_name(var),
+            set_symbol_point(var_name,
                              eval(val->arg1.node),
                              eval(val->arg2.node));
             break;

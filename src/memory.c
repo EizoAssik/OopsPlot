@@ -10,7 +10,7 @@ static size_t symcount = 0;
 
 void new_symbol(const char * literal, double init) {
     if (symcount < symbol_limit) {
-        symtable[symcount].literal = literal;
+        symtable[symcount].literal = strdup(literal);
         symtable[symcount].value = init;
         symcount += 1;
     } else {
@@ -20,7 +20,7 @@ void new_symbol(const char * literal, double init) {
 
 void new_symbol_point(const char * literal, double x, double y) {
     if (symcount < symbol_limit) {
-        symtable[symcount].literal = literal;
+        symtable[symcount].literal = strdup(literal);
         symtable[symcount].point = 1;
         symtable[symcount].value    = x;
         symtable[symcount].optional = y;
@@ -81,7 +81,7 @@ void set_symbol_point(const char * literal, double x, double y) {
 
 inline int find_symbol(const char * literal) {
     for (int i=0; i<symcount; ++i)
-        if (strcmp(literal, symtable[i].literal)) {
+        if (strcmp(literal, symtable[i].literal) == 0) {
             return i;
         }
     return -1;

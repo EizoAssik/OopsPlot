@@ -17,7 +17,7 @@ char *REVERSED_LITERAL[] = {
     // 终结符号
     "PLUS", "MINUS", "MUL", "DIV", "POWER",
     "LP", "RP", "COMMA", "SEMICOLON",
-    "NUMBER", "VAR", "FUNC",
+    "NUMBER", "VAR", "FUNC", "DMA",
     // 非终结符号
     "NONTER", "POINT", "EXPR",
 };
