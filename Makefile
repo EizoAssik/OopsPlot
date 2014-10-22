@@ -2,9 +2,8 @@ vpath %.c src
 
 CC=clang
 
-bases  := function.x lexer.x parser.x tokens.x usrfunc.x runtime.x
+bases  := function.x lexer.x parser.x tokens.x usrfunc.x runtime.x oopsplot.x error.x memory.x optimize.x
 sources := $(bases:.x=.c)
-headers := $(bases:.x=.h)
 objects := $(bases:.x=.o)
 
 oopsplot: $(objects)
