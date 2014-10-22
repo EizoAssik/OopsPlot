@@ -1,14 +1,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "parser.h"
+#include "error.h"
 
 const char * USAGE = "usage: oopsplot [file]\n";
 const char * EF_TPL = " is not a avaliable source file.\n";
-
-static void error(const char * why) {
-    puts(why);
-    exit(-1);
-}
 
 int main(int argc, char * argv[]) {
     if (argc != 2)

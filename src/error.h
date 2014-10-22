@@ -6,6 +6,7 @@
 
 void   error(const char * des);
 void warning(const char * des);
+void     rte(const char * des);
 
 char * format(const char * fmt, ...);
 

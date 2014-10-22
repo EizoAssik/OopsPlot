@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include "lexer.h"
 #include "tokens.h"
 #include "parser.h"
@@ -82,7 +83,7 @@ ExprNode * stmt_for() {
     var = new_node();
     var->type = VAR;
     match(VAR);
-    var->arg1.tk = src.current;
+    var->arg1.literal = src.current->literal;
     match(FROM);
     start    = stmt_expr();
     match(TO);
@@ -138,7 +139,7 @@ ExprNode * stmt_atom() {
     } else if (test_current(FUNC)) { // FUNCALL
         en     = new_node(); 
         en->op = find_func(src.current->literal);
-        match(LP); 
+        match(LP);
         en->arg1.node = stmt_expr();
         match(RP); 
         en->type = FUNC;
@@ -212,21 +213,20 @@ ExprNode * stmt_term() {
 }
 
 ExprNode * stmt_expr() {
-    ExprNode * expr  = new_node();
+    ExprNode * expr;
     ExprNode * first = stmt_term();
     lookforward(&src);
     while ( test_current(PLUS) || test_current(MINUS) ) {
+        expr = new_node();
         expr->type = FUNC;
         expr->op   = find_func(src.current->literal);
         ExprNode * second = stmt_term();
         expr->arg1.node = first;
         expr->arg2.node = second;
         first = expr;
-        expr  = new_node();
         lookforward(&src);
     }
     set_lookback(&src);
-    free(expr);
     return first;
 }
 

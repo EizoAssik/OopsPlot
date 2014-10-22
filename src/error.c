@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include "error.h"
 
+static const char * RTE = "RTE: ";
 char * format(const char * fmt, ...) {
     char * ret;
     va_list args;
@@ -17,4 +18,9 @@ void  error(const char * des) {
 
 void waring(const char * des) {
     puts(des);
+}
+
+void rte(const char * des) {
+    puts(RTE);
+    error(des);
 }
