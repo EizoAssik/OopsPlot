@@ -1,11 +1,4 @@
-T E PI + - * / // asdf
-T -- FOR 
-FOR
-T
-adsl
-nico
-make
-ROT is 3.14
-sin(42)
-3*5**4
-(1, 2)
+x is 3;
+y is 4;
+xy is (4, 3);
+FOR T FROM 0 TO 10 STEP 1 DRAW (T+x, y+T**2);
