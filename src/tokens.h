@@ -76,7 +76,8 @@ FUNC_INFO *   find_func(const char * name);
 _Bool is_terminal(enum TOKEN_TYPE tk_t);
 
 // 用于调试的函数
-
+#ifdef __TEST_LEXER__
 char * dump_token_to_str(TOKEN * tk);
+#endif
 
 #endif

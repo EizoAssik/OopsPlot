@@ -136,25 +136,3 @@ TOKEN * next_token(const char * src, size_t * cur) {
     }
     return BUFFER_OR_THIS(NULL);
 }
-# ifdef __TEST_LEXER__
-int main(int argc, char * argv[]) {
-    argv[1] = "example.gp";
-    FILE * src_file = fopen(argv[1], "r");
-    fseek(src_file, 0, SEEK_END);
-    size_t len = ftell(src_file) + 1;
-    fseek(src_file, 0, SEEK_SET);
-    char * src = (char *) calloc(1, len);
-    fread(src, 1, len, src_file);
-    printf("LEXER @ %s - %ld bytes\n", argv[1], len);
-    printf("FILE CONTAINS: \n %s \n", src);
-    size_t pos = 0;
-    TOKEN * tk = NULL;
-    while (1) {
-        tk = next_token(src, &pos);
-        if (tk==NULL)
-            break;
-        printf("%s\n", dump_token_to_str(tk));
-    }
-    return 0;
-}
-# endif

@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdarg.h>
 #include "lexer.h"
 #include "tokens.h"
 #include "parser.h"
@@ -9,6 +10,10 @@
 #include "error.h"
 
 SOURCE_INFO src;
+
+#ifdef __TEST_PARSER__
+void dump_stmt(char * label, ...);
+#endif
 
 void init_source_info(const char * filename, SOURCE_INFO * si) {
     si->file = fopen(filename, "r");
@@ -46,7 +51,11 @@ TOKEN * lookforward(SOURCE_INFO * src) {
 }
 
 static void lexer_error(TOKEN * tk) {
+#ifdef __TEST_LEXER__
     error(format("ERROR @ %s\n", dump_token_to_str(tk)));
+#else
+    error(format("ERROR @ %s\n", tk->literal));
+#endif
 }
 
 static inline _Bool test_current(enum TOKEN_TYPE t) {
@@ -95,7 +104,11 @@ ExprNode * stmt_for() {
     match(COMMA);
     y_expr   = stmt_expr();
     match(RP);   match(SEMICOLON);
+#ifndef __TEST_PARSER__
     eval_for(var, start, end, step, x_expr, y_expr);
+#else
+    dump_stmt("FOR", var, start, end, step, x_expr, y_expr, NULL);
+#endif
     return NULL;
 }
 
@@ -125,7 +138,11 @@ ExprNode * stmt_is() {
         value = stmt_expr();
     }
     match(SEMICOLON);
+#ifndef __TEST_PARSER__
     eval_is(desc, value);
+#else
+    dump_stmt("IS", desc, value, NULL);
+#endif
     return NULL;
 }
 
@@ -247,3 +264,48 @@ void parse(const char * filename) {
         }
     }
 }
+
+#ifdef __TEST_PARSER__
+void indent(int count) {
+    while (count--) {
+        putchar('\t');
+    }
+}
+
+void dump_expr(ExprNode * expr, int indent_level) {
+    switch (expr->type) {
+        case FUNC:
+            indent(indent_level);
+            puts(expr->op->name);
+            dump_expr(expr->arg1.node, indent_level + 1);
+            if (expr->op->argc == 2) {
+                dump_expr(expr->arg2.node, indent_level + 1);
+            }
+            break;
+            
+        case NUMBER:
+            indent(indent_level);
+            printf("%lf\n", expr->value);
+            break;
+            
+        case VAR:
+            indent(indent_level);
+            printf("<VAR %s>\n", expr->arg1.literal);
+            break;
+            
+        default:
+            break;
+    }
+}
+
+void dump_stmt(char * label, ...) {
+    puts(label);
+    va_list exprs;
+    va_start(exprs, label);
+    while (1) {
+        ExprNode * expr = va_arg(exprs, ExprNode *);
+        if (!expr) break;
+        dump_expr(expr, 1);
+    }
+}
+#endif

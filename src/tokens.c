@@ -134,6 +134,7 @@ inline _Bool is_terminal(enum TOKEN_TYPE tk_t) {
     return tk_t > NONTER;
 }
 
+#ifdef __TEST_LEXER__
 char * dump_token_to_str(TOKEN * tk) {
     char * desc = malloc(64);
     switch (tk->type) {
@@ -157,3 +158,4 @@ char * dump_token_to_str(TOKEN * tk) {
     }
     return desc;
 }
+#endif
