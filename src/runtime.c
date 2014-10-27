@@ -12,10 +12,6 @@
 typedef double (*sfunc)(double);
 typedef double (*dfunc)(double, double);
 
-static inline const char * get_var_name(ExprNode * expr) {
-    return expr->arg1.literal;
-}
-
 double eval(ExprNode * expr) {
     switch (expr->type) {
         case FUNC:
