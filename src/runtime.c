@@ -2,12 +2,16 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "adjust.h"
 #include "tokens.h"
 #include "parser.h"
 #include "runtime.h"
 #include "error.h"
 #include "memory.h"
 #include "optimize.h"
+
+static Point target;
+static ADJUST_SETTING adjust_settings;
 
 typedef double (*sfunc)(double);
 typedef double (*dfunc)(double, double);
@@ -55,10 +59,12 @@ void eval_for(ExprNode * var,
     sym = start;
     x_expr = optimize(x_expr);
     y_expr = optimize(y_expr);
+    update_setting(&adjust_settings);
     while (sym < end) {
         x = eval(x_expr);
         y = eval(y_expr);
-        printf("(%lf, %lf)\n", x, y);
+        adjust(x, y, &target, &adjust_settings);
+        printf("(%lf, %lf)\n", target.x, target.y);
         sym += delta;
         setvar(var_pos, sym);
     }
@@ -76,13 +82,13 @@ void eval_is(ExprNode * var, ExprNode * val) {
     } else {
         var->type = val->type;
     }
-    if (var->type != val->type)
+    if (var->type == POINT && POINT != val->type)
         error(format("IS: %s<%s> excepted, got %s.\n",
                      var->arg1.tk->literal,
                      REVERSED_LITERAL[var->type],
                      REVERSED_LITERAL[val->type]));
     switch (var->type) {
-        case NUMBER:
+        case NUMBER: case EXPR: case FUNC:
             set_symbol(var_name, eval(val));
             break;
         case POINT:

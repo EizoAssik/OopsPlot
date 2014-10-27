@@ -122,9 +122,7 @@ ExprNode * stmt_is() {
         value->arg2.node = y;
     } else {
         set_lookback(&src);
-        match(NUMBER);
-        value->value = src.current->info.value;
-        value->type = NUMBER;
+        value = stmt_expr();
     }
     match(SEMICOLON);
     eval_is(desc, value);

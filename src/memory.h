@@ -29,6 +29,16 @@ Point * pointaccess(size_t index);
 void    setvar(size_t index, double value);
 void    setpoint(size_t index, double x, double y);
 
+double * scale_x;
+double * scale_y;
+double * origin_x;
+double * origin_y;
+double * rotate;
+
+int * rot_changed;
+int * org_changed;
+int * scl_changed;
+
 // for old code
 
 int has_symbol(const char * literal);
