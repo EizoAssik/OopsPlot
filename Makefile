@@ -1,7 +1,6 @@
 vpath %.c src
 
-CC=clang
-
+CFLAGS=-O2 -std=c99 -Wall
 bases  := function.x lexer.x parser.x tokens.x usrfunc.x runtime.x oopsplot.x error.x memory.x optimize.x adjust.x
 sources := $(bases:.x=.c)
 objects := $(bases:.x=.o)
