@@ -147,7 +147,7 @@ ExprNode * stmt_is() {
 }
 
 ExprNode * stmt_atom() {
-    ExprNode * en;
+    ExprNode * en = NULL;
     if (test(LP)) { // (expr)
         en = stmt_expr(); 
         match(RP);
