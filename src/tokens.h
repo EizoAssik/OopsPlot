@@ -1,5 +1,5 @@
-#ifndef __gayplot__tokens__
-#define __gayplot__tokens__
+#ifndef __Oopsplot__tokens__
+#define __Oopsplot__tokens__
 
 #include <stdio.h>
 #include <math.h>

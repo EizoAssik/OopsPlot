@@ -1,5 +1,5 @@
-#ifndef __gayplot__function__
-#define __gayplot__function__
+#ifndef __Oopsplot__function__
+#define __Oopsplot__function__
 
 #include <stdio.h>
 #include <math.h>
@@ -15,4 +15,4 @@ double minus(double x);
 
 extern FUNC_INFO BUILTIN_FUNC[];
 
-#endif /* defined(__gayplot__function__) */
+#endif /* defined(__Oopsplot__function__) */

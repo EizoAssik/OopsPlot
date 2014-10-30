@@ -1,8 +1,8 @@
 #include "tokens.h"
 
-#ifndef __gayplot__lexer__
-#define __gayplot__lexer__
+#ifndef __Oopsplot__lexer__
+#define __Oopsplot__lexer__
 
 TOKEN * next_token(const char * src, size_t * cur);
 
-#endif /* defined(__gayplot__lexer__) */
+#endif /* defined(__Oopsplot__lexer__) */
