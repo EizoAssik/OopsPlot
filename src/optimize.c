@@ -18,6 +18,7 @@ int is_mutable(ExprNode * expr) {
                 optimize(expr->arg2.node);
                 mutable += is_mutable(expr->arg2.node);
             }
+            break;
         default:
             return 1;
     }
