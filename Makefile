@@ -6,7 +6,7 @@ sources := $(bases:.x=.c)
 objects := $(bases:.x=.o)
 
 oopsplot: $(objects)
-	$(CC) -o oopsplot $(objects)
+	$(CC) -lm -o oopsplot $(objects)
 
 $(objects): $(sources)
 

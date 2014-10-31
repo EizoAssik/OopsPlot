@@ -4,8 +4,9 @@
 #include "parser.h"
 #include "error.h"
 
-static const size_t symbol_limit = 128;
-static Symbol symtable[symbol_limit] = {
+#define SYM_LIMIT 128
+
+static Symbol symtable[SYM_LIMIT] = {
     { .literal = "SCALE",  .value = 1, .optional = 1, .point = 1 },
     { .literal = "ORIGIN", .value = 1, .optional = 1, .point = 1 },
     { .literal = "ROT",    .value = 0, .optional = 0, .point = 0 },
@@ -25,7 +26,7 @@ int * org_changed = &(setting_changed[1]);
 int * rot_changed = &(setting_changed[2]);
 
 void new_symbol(const char * literal, double init) {
-    if (symcount < symbol_limit) {
+    if (symcount < SYM_LIMIT) {
         symtable[symcount].literal = strdup(literal);
         symtable[symcount].value = init;
         symcount += 1;
@@ -35,7 +36,7 @@ void new_symbol(const char * literal, double init) {
 }
 
 void new_symbol_point(const char * literal, double x, double y) {
-    if (symcount < symbol_limit) {
+    if (symcount < SYM_LIMIT) {
         symtable[symcount].literal = strdup(literal);
         symtable[symcount].point = 1;
         symtable[symcount].value    = x;

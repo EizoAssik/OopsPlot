@@ -1,3 +1,4 @@
+#include <stdio.h>
 #include "tokens.h"
 #include "usrfunc.h"
 
